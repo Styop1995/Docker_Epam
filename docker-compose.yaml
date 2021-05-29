@@ -1,0 +1,43 @@
+version: '3.1'
+
+services:
+
+  wordpress:
+    build: .
+    restart: always
+    ports:
+      - 8087:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: user
+      WORDPRESS_DB_PASSWORD: pass123
+      WORDPRESS_DB_NAME: wp_db
+    healthcheck:
+      test: "wget -O /dev/null http://localhost || exit 1"
+      interval: 10s
+      retries: 2 
+    volumes:
+      - wordpress:/var/www/html  
+    networks:
+      - wpsite       
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: wp_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass123
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    healthcheck:
+      test: "/etc/init.d/mysql status"
+      interval: 10s
+      retries: 2 
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - wpsite  
+volumes:
+  wordpress:
+  db:
+networks:
+  wpsite:
